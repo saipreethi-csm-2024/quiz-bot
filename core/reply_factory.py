@@ -31,7 +31,31 @@ def generate_bot_responses(message, session):
 def record_current_answer(answer, current_question_id, session):
     '''
     Validates and stores the answer for the current question to django session.
+    
     '''
+    if current_question_id is None:
+        return False, "No current question."
+
+    if not isinstance(answer, str):
+        return False, "Invalid answer format."
+    current_question = next((q for q in PYTHON_QUESTION_LIST if q['id'] == current_question_id), None)
+    if not current_question:
+        return False, "Invalid question ID."
+    correct_answer = current_question.get('answer')
+    if correct_answer is None:
+        return False, "No correct answer provided for the question."
+    if answer.strip().lower() == correct_answer.strip().lower():
+        is_correct = True
+    else:
+        is_correct = False
+    if 'answers' not in session:
+        session['answers'] = []
+
+    session['answers'].append({
+        'question_id': current_question_id,
+        'answer': answer,
+        'is_correct': is_correct
+    })
     return True, ""
 
 
